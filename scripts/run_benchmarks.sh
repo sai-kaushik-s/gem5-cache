@@ -4,10 +4,10 @@ set -e
 GEM5_PATH="/gem5/build/X86/gem5.opt"
 SCRIPT_PATH="./src/benchmark.py"
 BASE_OUTPUT_DIR="./output"
-BINARIES=("./bin/test")
-BINARY_ARGS=("10")
+BINARIES=("./bin/compute" "./bin/pointer" "./bin/stream")
+BINARY_ARGS=("1048576" "1048576 1" "1048576 1")
 PREDICTORS=("bimodal" "local" "tage" "perceptron" "none")
-ROB_SIZES=("64" "128" "256")
+ROB_SIZES=("64" "128" "192" "256")
 PIPELINE_WIDTHS=("2" "8")
 L1_SIZES=("16KiB" "64KiB")
 L1_PREFETCHERS=("stride" "tagged")

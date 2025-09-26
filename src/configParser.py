@@ -25,7 +25,7 @@ from m5.objects import (
 )
 
 CORE_ISA = ISA.X86
-NUM_CORES = 1
+NUM_CORES = 4
 CLK_FREQ = "3.2GHz"
 CPU_TYPE = CPUTypes.O3
 
@@ -106,7 +106,7 @@ def setupConfig(args):
 
     workloadConfig = {
         "binary": binaryPath,
-        "binaryArgs": args.binary_args or [],
+        "binaryArgs": args.binary_args[-1].split(" ") or [],
     }
 
     return coreConfig, cacheConfig, workloadConfig
