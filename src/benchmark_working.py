@@ -1,5 +1,6 @@
+import os
+
 import m5.stats as stats
-from m5.objects import MathExprPowerModel
 
 from gem5.components.boards.simple_board import SimpleBoard
 from gem5.components.cachehierarchies.classic.private_l1_shared_l2_cache_hierarchy import (
@@ -7,6 +8,7 @@ from gem5.components.cachehierarchies.classic.private_l1_shared_l2_cache_hierarc
 )
 from gem5.components.memory.simple import SingleChannelSimpleMemory
 from gem5.components.processors.simple_processor import SimpleProcessor
+from gem5.isas import ISA
 from gem5.resources.resource import BinaryResource
 from gem5.simulate.simulator import Simulator
 from gem5.simulate.exit_event import ExitEvent
@@ -41,32 +43,16 @@ def roiStart():
         ]()
     if cacheConfig["l2Prefetcher"]:
         board.cache_hierarchy.l2cache.prefetcher = cacheConfig["l2Prefetcher"]()
-    board.cache_hierarchy.l2cache.power_model = MathExprPowerModel(
-        dyn="0.7*overall_misses/sim_seconds+0.4*overall_accesses/sim_seconds",
-        st="0.12"
-    )
     for l1d in board.cache_hierarchy.l1dcaches:
         if cacheConfig["l1ReplacementPolicy"]:
             l1d.replacement_policy = cacheConfig["l1ReplacementPolicy"]()
         if cacheConfig["l1Prefetcher"]:
             l1d.prefetcher = cacheConfig["l1Prefetcher"]()
-        l1d.power_model = MathExprPowerModel(
-            dyn="0.5*overall_misses/sim_seconds+0.3*overall_accesses/sim_seconds",
-            st="0.1"
-        )
     for l1i in board.cache_hierarchy.l1icaches:
         if cacheConfig["l1ReplacementPolicy"]:
             l1i.replacement_policy = cacheConfig["l1ReplacementPolicy"]()
         if cacheConfig["l1Prefetcher"]:
             l1i.prefetcher = cacheConfig["l1Prefetcher"]()
-        l1i.power_model = MathExprPowerModel(
-            dyn="0.5*overall_misses/sim_seconds+0.3*overall_accesses/sim_seconds",
-            st="0.1"
-        )
-    memory.power_model = MathExprPowerModel(
-        dyn="0.2*num_reads/sim_seconds+0.2*num_writes/sim_seconds",
-        st="0.05"
-    )
     stats.reset()
     yield False
 
