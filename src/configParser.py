@@ -25,7 +25,7 @@ from m5.objects import (
 )
 
 CORE_ISA = ISA.X86
-NUM_CORES = 4
+NUM_CORES = 1
 CLK_FREQ = "3.2GHz"
 CPU_TYPE = CPUTypes.O3
 

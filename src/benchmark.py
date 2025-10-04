@@ -1,11 +1,12 @@
 import m5.stats as stats
-from m5.objects import MathExprPowerModel
+from m5.objects import PowerModel, PowerModelState, MathExprPowerModel
+from m5.proxy import Parent
 
 from gem5.components.boards.simple_board import SimpleBoard
 from gem5.components.cachehierarchies.classic.private_l1_shared_l2_cache_hierarchy import (
     PrivateL1SharedL2CacheHierarchy,
 )
-from gem5.components.memory.simple import SingleChannelSimpleMemory
+from gem5.components.memory.single_channel import SingleChannelDDR3_1600
 from gem5.components.processors.simple_processor import SimpleProcessor
 from gem5.resources.resource import BinaryResource
 from gem5.simulate.simulator import Simulator
@@ -15,6 +16,29 @@ from configParser import (
     parseArguments,
     setupConfig,
 )
+
+
+class MemoryPowerOn(MathExprPowerModel):
+    def __init__(self, mem_ctrl_path, **kwargs):
+        super().__init__(**kwargs)
+        self.dyn = f"(({mem_ctrl_path}.bytesRead::total + {mem_ctrl_path}.bytesWritten::total) / simSeconds * 0.00000007)"
+        self.st = "temp * 0.8"
+
+
+class MemoryPowerOff(MathExprPowerModel):
+    dyn = "0"
+    st = "0"
+
+
+class MemoryPowerModel(PowerModel):
+    def __init__(self, mem_ctrl_path, **kwargs):
+        super().__init__(**kwargs)
+        self.pm = [
+            MemoryPowerOn(mem_ctrl_path),
+            MemoryPowerOff(),
+            MemoryPowerOff(),
+            MemoryPowerOff(),
+        ]
 
 
 args = parseArguments()
@@ -35,38 +59,25 @@ def roiStart():
         if coreConfig["predictor"]:
             cpu.core.branchPred = coreConfig["predictor"]()
 
-    if cacheConfig["l2ReplacementPolicy"]:
-        board.cache_hierarchy.l2cache.replacement_policy = cacheConfig[
-            "l2ReplacementPolicy"
-        ]()
-    if cacheConfig["l2Prefetcher"]:
-        board.cache_hierarchy.l2cache.prefetcher = cacheConfig["l2Prefetcher"]()
-    board.cache_hierarchy.l2cache.power_model = MathExprPowerModel(
-        dyn="0.7*overall_misses/sim_seconds+0.4*overall_accesses/sim_seconds",
-        st="0.12"
-    )
+    if cacheConfig["l2rp"]:
+        board.cache_hierarchy.l2cache.replacement_policy = cacheConfig["l2rp"]()
+    if cacheConfig["l2p"]:
+        board.cache_hierarchy.l2cache.prefetcher = cacheConfig["l2p"]()
+
     for l1d in board.cache_hierarchy.l1dcaches:
-        if cacheConfig["l1ReplacementPolicy"]:
-            l1d.replacement_policy = cacheConfig["l1ReplacementPolicy"]()
-        if cacheConfig["l1Prefetcher"]:
-            l1d.prefetcher = cacheConfig["l1Prefetcher"]()
-        l1d.power_model = MathExprPowerModel(
-            dyn="0.5*overall_misses/sim_seconds+0.3*overall_accesses/sim_seconds",
-            st="0.1"
-        )
+        if cacheConfig["l1rp"]:
+            l1d.replacement_policy = cacheConfig["l1rp"]()
+        if cacheConfig["l1p"]:
+            l1d.prefetcher = cacheConfig["l1p"]()
     for l1i in board.cache_hierarchy.l1icaches:
-        if cacheConfig["l1ReplacementPolicy"]:
-            l1i.replacement_policy = cacheConfig["l1ReplacementPolicy"]()
-        if cacheConfig["l1Prefetcher"]:
-            l1i.prefetcher = cacheConfig["l1Prefetcher"]()
-        l1i.power_model = MathExprPowerModel(
-            dyn="0.5*overall_misses/sim_seconds+0.3*overall_accesses/sim_seconds",
-            st="0.1"
-        )
-    memory.power_model = MathExprPowerModel(
-        dyn="0.2*num_reads/sim_seconds+0.2*num_writes/sim_seconds",
-        st="0.05"
-    )
+        if cacheConfig["l1rp"]:
+            l1i.replacement_policy = cacheConfig["l1rp"]()
+        if cacheConfig["l1p"]:
+            l1i.prefetcher = cacheConfig["l1p"]()
+    mem_ctrl = board.get_memory().mem_ctrl[0]
+    mem_ctrl.power_state.default_state = "ON"
+    mem_ctrl.power_model = MemoryPowerModel(mem_ctrl.path())
+    board.power_model = PowerModel(subsystem=Parent.itself)
     stats.reset()
     yield False
 
@@ -86,9 +97,7 @@ cacheHierarchy = PrivateL1SharedL2CacheHierarchy(
     l2_assoc=cacheConfig["l2Associativity"],
 )
 
-memory = SingleChannelSimpleMemory(
-    latency="40ns", latency_var="0ns", bandwidth="25.6GB/s", size="3GiB"
-)
+memory = SingleChannelDDR3_1600(size="3GiB")
 
 processor = SimpleProcessor(
     cpu_type=coreConfig["cpuType"],
@@ -102,7 +111,6 @@ board = SimpleBoard(
     memory=memory,
     cache_hierarchy=cacheHierarchy,
 )
-
 board.set_se_binary_workload(
     binary=BinaryResource(workloadConfig["binary"]),
     arguments=workloadConfig["binaryArgs"],
