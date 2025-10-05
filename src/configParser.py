@@ -151,7 +151,7 @@ def parseArguments():
         type=int,
         default=4,
         help="Size of the Pipeline Width for the O3 CPU.",
-        choices=[2, 4, 8],
+        choices=[4, 8, 12],
     )
 
     parser.add_argument(
@@ -169,7 +169,7 @@ def parseArguments():
         type=int,
         default=4,
         help="Associativity of the L1 Cache for the O3 CPU.",
-        choices=[4, 8],
+        choices=[2, 4, 8],
     )
 
     parser.add_argument(
@@ -205,7 +205,7 @@ def parseArguments():
         type=int,
         default=8,
         help="Associativity of the L2 Cache for the O3 CPU.",
-        choices=[8, 16],
+        choices=[8, 16, 32],
     )
 
     parser.add_argument(

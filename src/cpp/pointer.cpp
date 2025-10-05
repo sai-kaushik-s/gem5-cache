@@ -1,9 +1,7 @@
 #include <iostream>
-#include <vector>
-#include <cstdint>
-#include <iomanip>
-#include "gem5/m5ops.h"
 #include <fstream>
+#include <cstdint>
+#include "gem5/m5ops.h"
 
 struct Node {
     Node* next;
@@ -11,38 +9,39 @@ struct Node {
 };
 
 int main(int argc, char** argv) {
-    // args: [n_nodes] [traverses]
-    uint64_t n_nodes = (argc > 1) ? std::stoull(argv[1]) : 1024ULL; //default: 1024
-    uint64_t traverses  = (argc > 2) ? std::stoull(argv[2]) : 4ULL;	//default: 4
+    uint64_t n_nodes = (argc > 1) ? std::stoull(argv[1]) : 1024ULL;
+    uint64_t traverses = (argc > 2) ? std::stoull(argv[2]) : 4ULL;
     if (n_nodes < 2) n_nodes = 2;
 
-    // allocate and link sequentially into a cycle
-    std::vector<Node> nodes(n_nodes);
+    Node* head = nullptr;
+    Node* prev = nullptr;
     for (uint64_t i = 0; i < n_nodes; ++i) {
-        nodes[i].next = &nodes[(i + 1) % n_nodes];
-        nodes[i].data  = i;
+        Node* node = new Node;
+        node->data = i;
+        node->next = nullptr;
+        if (!head)
+            head = node;
+        else
+            prev->next = node;
+        prev = node;
     }
-	nodes[n_nodes-1].next=NULL;
 
-    // pointer chase: dependent loads; minimal MLP
+    m5_work_begin(0, 0);
     volatile Node* p;
     uint64_t sum = 0;
-
-    m5_work_begin(0, 0); 
-//	std::ofstream logFile;
-//	logFile.open("test_log.txt");
-  //  logFile << "ARGC" <<n_nodes<<"\n";
-    //logFile << "ARGC2" <<traverses<<"\n";
-	for (uint64_t r = 0; r < traverses; ++r) {
-		p=&nodes[0];
-		for (p=&nodes[0];p!=NULL;p=p->next){
-			sum+=p->data;
+    for (uint64_t r = 0; r < traverses; ++r) {
+        for (p = head; p != nullptr; p = p->next) {
+            sum += p->data;
         }
     }
-//	logFile << "chase_checksum " << sum << "\n";
-//	logFile.close();
-    m5_work_end(0,0);
-	
+    m5_work_end(0, 0);
+
+    p = head;
+    while (p != nullptr) {
+        Node* tmp = const_cast<Node*>(p);
+        p = p->next;
+        delete tmp;
+    }
+
     return 0;
 }
-

@@ -1,0 +1,12 @@
+Global frequency set at 1000000000000 ticks per second
+gem5 Simulator System.  https://www.gem5.org
+gem5 is copyrighted software; use the --copyright option for details.
+
+gem5 version 23.0.0.1
+gem5 compiled Sep 26 2025 09:10:32
+gem5 started Oct  5 2025 14:11:36
+gem5 executing on aff071f6bc48, pid 2023
+command line: /gem5/build/X86/gem5.opt --outdir=./output/pointer/l2p_tagged ./src/benchmark.py --l2-prefetcher=tagged --binary=./bin/pointer '--binary-args=65536 4'
+
+ROI started
+ROI ended
