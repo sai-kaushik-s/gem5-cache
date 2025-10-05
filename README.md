@@ -1,6 +1,6 @@
 # Performance Impact of OoO Execution and Speculation in gem5
 
-**Author:** Sai Kaushik S (2025CSZ8470) and Yosep Ro (2025ANZ8223)
+**Author:** [Sai Kaushik S](https://github.com/sai-kaushik-s) (2025CSZ8470) and [Yosep Ro](https://github.com/yoyo9747) (2025ANZ8223)
 
 **Course:** Architecture of High Performance System
 
