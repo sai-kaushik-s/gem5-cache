@@ -1,5 +1,4 @@
 import m5.stats as stats
-from m5.objects import PowerModel, MathExprPowerModel, SubSystem
 
 from gem5.components.boards.simple_board import SimpleBoard
 from gem5.components.memory.single_channel import SingleChannelDDR3_1600
@@ -34,12 +33,12 @@ def roiEnd():
 cacheHierarchy = CustomPrivateL1SharedL2CacheHierarchy(
     l1_size=cacheConfig["l1Size"],
     l1_assoc=cacheConfig["l1Associativity"],
-    l1_replacement_policy=cacheConfig["l1rp"],
-    l1_prefetcher=cacheConfig["l1p"],
+    l1_replacement_policy=cacheConfig["l1ReplacementPolicy"],
+    l1_prefetcher=cacheConfig["l1Prefetcher"],
     l2_size=cacheConfig["l2Size"],
     l2_assoc=cacheConfig["l2Associativity"],
-    l2_replacement_policy=cacheConfig["l2rp"],
-    l2_prefetcher=cacheConfig["l2p"],
+    l2_replacement_policy=cacheConfig["l2ReplacementPolicy"],
+    l2_prefetcher=cacheConfig["l2Prefetcher"],
 )
 
 memory = SingleChannelDDR3_1600(size="4GiB")

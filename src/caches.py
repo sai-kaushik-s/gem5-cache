@@ -1,5 +1,3 @@
-from typing import Type, Optional
-
 from gem5.components.cachehierarchies.classic.private_l1_shared_l2_cache_hierarchy import (
     PrivateL1SharedL2CacheHierarchy,
 )

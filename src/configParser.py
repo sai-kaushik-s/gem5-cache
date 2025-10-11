@@ -1,60 +1,14 @@
 import os
 from argparse import ArgumentParser, REMAINDER
-
-from gem5.isas import ISA
-from gem5.components.processors.cpu_types import CPUTypes
-from m5.objects import (
-    # Branch Predictors
-    BiModeBP,
-    LocalBP,
-    TournamentBP,
-    TAGE,
-    LTAGE,
-    MultiperspectivePerceptron64KB,
-    # Cache Replacement Policies
-    LRURP,
-    RandomRP,
-    DuelingRP,
-    TreePLRURP,
-    # Cache Prefetchers
-    StridePrefetcher,
-    TaggedPrefetcher,
-    AMPMPrefetcher,
-    SignaturePathPrefetcher,
-    BOPPrefetcher,
+from constants import (
+    BRANCH_PREDICTORS,
+    CACHE_REPLACEMENT_POLICIES,
+    CACHE_PREFETCHERS,
+    CORE_ISA,
+    NUM_CORES,
+    CLK_FREQ,
+    CPU_TYPE,
 )
-
-CORE_ISA = ISA.X86
-NUM_CORES = 1
-CLK_FREQ = "3.2GHz"
-CPU_TYPE = CPUTypes.O3
-
-BRANCH_PREDICTORS = {
-    "bimodal": BiModeBP,
-    "local": LocalBP,
-    "tournament": TournamentBP,
-    "tage": TAGE,
-    "ltage": LTAGE,
-    "perceptron": MultiperspectivePerceptron64KB,
-    "none": None,
-}
-
-CACHE_REPLACEMENT_POLICIES = {
-    "lru": LRURP,
-    "random": RandomRP,
-    "dueling": DuelingRP,
-    "plru": TreePLRURP,
-    "none": None,
-}
-
-CACHE_PREFETCHERS = {
-    "stride": StridePrefetcher,
-    "tagged": TaggedPrefetcher,
-    "ampm": AMPMPrefetcher,
-    "signature": SignaturePathPrefetcher,
-    "bop": BOPPrefetcher,
-    "none": None,
-}
 
 
 def setupConfig(args):
@@ -73,31 +27,35 @@ def setupConfig(args):
         "cpuType": CPU_TYPE,
     }
 
-    l1rpKey = args.l1_replacement_policy
-    if l1rpKey not in CACHE_REPLACEMENT_POLICIES:
-        raise ValueError(f"Unknown L1 replacement policy type: {l1rpKey}")
+    l1ReplacementPolicyKey = args.l1_replacement_policy
+    if l1ReplacementPolicyKey not in CACHE_REPLACEMENT_POLICIES:
+        raise ValueError(
+            f"Unknown L1 replacement policy type: {l1ReplacementPolicyKey}"
+        )
 
-    l1pKey = args.l1_prefetcher
-    if l1pKey not in CACHE_PREFETCHERS:
-        raise ValueError(f"Unknown L1 prefetcher type: {l1pKey}")
+    l1PrefetcherKey = args.l1_prefetcher
+    if l1PrefetcherKey not in CACHE_PREFETCHERS:
+        raise ValueError(f"Unknown L1 prefetcher type: {l1PrefetcherKey}")
 
-    l2rpKey = args.l2_replacement_policy
-    if l2rpKey not in CACHE_REPLACEMENT_POLICIES:
-        raise ValueError(f"Unknown L2 replacement policy type: {l2rpKey}")
+    l2ReplacementPolicyKey = args.l2_replacement_policy
+    if l2ReplacementPolicyKey not in CACHE_REPLACEMENT_POLICIES:
+        raise ValueError(
+            f"Unknown L2 replacement policy type: {l2ReplacementPolicyKey}"
+        )
 
-    l2pKey = args.l2_prefetcher
-    if l2pKey not in CACHE_PREFETCHERS:
-        raise ValueError(f"Unknown L2 prefetcher type: {l2pKey}")
+    l2PrefetcherKey = args.l2_prefetcher
+    if l2PrefetcherKey not in CACHE_PREFETCHERS:
+        raise ValueError(f"Unknown L2 prefetcher type: {l2PrefetcherKey}")
 
     cacheConfig = {
         "l1Size": args.l1_size,
         "l1Associativity": args.l1_associativity,
-        "l1rp": CACHE_REPLACEMENT_POLICIES[l1rpKey],
-        "l1p": CACHE_PREFETCHERS[l1pKey],
+        "l1ReplacementPolicy": CACHE_REPLACEMENT_POLICIES[l1ReplacementPolicyKey],
+        "l1Prefetcher": CACHE_PREFETCHERS[l1PrefetcherKey],
         "l2Size": args.l2_size,
         "l2Associativity": args.l2_associativity,
-        "l2rp": CACHE_REPLACEMENT_POLICIES[l2rpKey],
-        "l2p": CACHE_PREFETCHERS[l2pKey],
+        "l2ReplacementPolicy": CACHE_REPLACEMENT_POLICIES[l2ReplacementPolicyKey],
+        "l2Prefetcher": CACHE_PREFETCHERS[l2PrefetcherKey],
     }
 
     binaryPath = args.binary
